@@ -25,12 +25,12 @@ Complete run on the real pool, including 20 one-versus-rest contrasts:
 
 ## What is proved
 
-59 claims. Every residual is exactly zero.
+64 claims. Every residual is exactly zero.
 
 | module | proves |
 |---|---|
 | `proofs/poisson.py` | the Poisson Hessian, and that the counts drop out of it |
-| `proofs/negative_binomial.py` | the NB Hessian, using the `(R, A)` reparameterisation |
+| `proofs/negative_binomial.py` | the NB Hessian in `η = log s1` and `κ = log k`, and the count sums and series that keep it exact as the overdispersion approaches zero |
 | `proofs/clustered_negative_binomial.py` | the ClusteredNB Hessian, diagonal plus rank one |
 | `proofs/covariance.py` | structural separation, the blockwise inverse, the Schur inverse, the block-diagonal spectrum, and the condition number as a symmetric eigenproblem |
 
@@ -71,7 +71,9 @@ SVD.
 ## Implementation
 
 The matching NiMARE changes are on the `cbmr-closed-form-information` branch of
-<https://github.com/jdkent/NiMARE>.
+<https://github.com/jdkent/NiMARE>. The negative binomial's `(η, κ)` form is
+<https://github.com/neurostuff/NiMARE/pull/1186>. It replaces an earlier `(R, A)` form, which is the
+same mathematics but cancels catastrophically as the overdispersion approaches zero.
 
 ## Scope
 

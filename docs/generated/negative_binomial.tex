@@ -4,15 +4,31 @@
 \subsection{Negative Binomial}
 
 NiMARE's negative binomial uses shape $r=s_1^2/(\theta s_2)$ and success
-probability $\pi_v=(1+s_1/(\theta u_v s_2))^{-1}$. Under the reparameterisation
-$A=s_1/(\theta s_2)$, $R=s_1A$ we have $\pi_v=u_v/(u_v+A)$, and the special functions depend on
-$R$ alone, the voxels on $S$ alone, and the moderators on $(R,A)$ alone.
+probability $\pi_v=(1+s_1/(\theta u_v s_2))^{-1}$. Writing $\eta=\log s_1$ and
+$\kappa=\log k$ with $k=\theta s_2/s_1^2$, the voxel mean is $\mu_v=e^\eta u_v$, the size is
+$1/k$, and each voxel's summand depends on $(\eta,\kappa)$ and $S_v$ alone. Below,
+$x_v=k\mu_v$.
 
 
 \noindent The expressions the claims are formed from:
 
 \begin{equation*}
-  \Psi(R, A, S) = - 3 R \log{\left(A \right)} - S_{0} y_{0} - S_{1} y_{1} - S_{2} y_{2} + \left(R + y_{0}\right) \log{\left(A + e^{S_{0}} \right)} + \left(R + y_{1}\right) \log{\left(A + e^{S_{1}} \right)} + \left(R + y_{2}\right) \log{\left(A + e^{S_{2}} \right)} + 3 \operatorname{loggamma}{\left(R \right)} - \operatorname{loggamma}{\left(R + y_{0} \right)} - \operatorname{loggamma}{\left(R + y_{1} \right)} - \operatorname{loggamma}{\left(R + y_{2} \right)}
+  \lambda(\eta, \kappa, S_v) = \kappa y + y \log{\left(e^{S} e^{\eta} \right)} - \left(y + e^{- \kappa}\right) \log{\left(e^{S} e^{\eta} e^{\kappa} + 1 \right)} + \operatorname{loggamma}{\left(y + e^{- \kappa} \right)} - \operatorname{loggamma}{\left(e^{- \kappa} \right)}
+\end{equation*}
+\noindent One voxel's log-likelihood, up to $-\log\Gamma(Y_v+1)$.
+
+\begin{equation*}
+  G_1 = y - \left(\operatorname{polygamma}{\left(0,y + e^{- \kappa} \right)} - \operatorname{polygamma}{\left(0,e^{- \kappa} \right)}\right) e^{- \kappa}
+\end{equation*}
+\noindent The count term of $\lambda_\kappa$. $\operatorname{polygamma}(0, \cdot)$ is the digamma function.
+
+\begin{equation*}
+  G_2 = \left(\operatorname{polygamma}{\left(0,y + e^{- \kappa} \right)} - \operatorname{polygamma}{\left(0,e^{- \kappa} \right)}\right) e^{- \kappa} + \left(\operatorname{polygamma}{\left(1,y + e^{- \kappa} \right)} - \operatorname{polygamma}{\left(1,e^{- \kappa} \right)}\right) e^{- 2 \kappa}
+\end{equation*}
+\noindent The count term of $\lambda_{\kappa\kappa}$.
+
+\begin{equation*}
+  g(x_v) = - \frac{1}{x_{v} + 1} + \frac{\log{\left(x_{v} + 1 \right)}}{x_{v}}
 \end{equation*}
 
 \noindent Residuals, each asserted to vanish:
@@ -22,33 +38,38 @@ $R$ alone, the voxels on $S$ alone, and the moderators on $(R,A)$ alone.
 \toprule
 claim & residual & result\\
 \midrule
-Psi(R,A,S) equals NiMARE's summand & $\Psi\big|_{R,A} - \big(-\log\mathcal{L} - \textrm{const}\big)$ & $0$\\
-d2Psi/dS0\^{}2 & $\partial^2_{S_0}\Psi - \frac{(R+Y_0)u_0A}{(u_0+A)^2}$ & $0$\\
-d2Psi/dS0 dR & $\partial^2_{S_0R}\Psi - \frac{u_0}{u_0+A}$ & $0$\\
-d2Psi/dS0 dA & $\partial^2_{S_0A}\Psi + \frac{(R+Y_0)u_0}{(u_0+A)^2}$ & $0$\\
-d2Psi/dS1\^{}2 & $\partial^2_{S_1}\Psi - \frac{(R+Y_1)u_1A}{(u_1+A)^2}$ & $0$\\
-d2Psi/dS1 dR & $\partial^2_{S_1R}\Psi - \frac{u_1}{u_1+A}$ & $0$\\
-d2Psi/dS1 dA & $\partial^2_{S_1A}\Psi + \frac{(R+Y_1)u_1}{(u_1+A)^2}$ & $0$\\
-d2Psi/dS2\^{}2 & $\partial^2_{S_2}\Psi - \frac{(R+Y_2)u_2A}{(u_2+A)^2}$ & $0$\\
-d2Psi/dS2 dR & $\partial^2_{S_2R}\Psi - \frac{u_2}{u_2+A}$ & $0$\\
-d2Psi/dS2 dA & $\partial^2_{S_2A}\Psi + \frac{(R+Y_2)u_2}{(u_2+A)^2}$ & $0$\\
-Psi\_R & $\Psi_R\ \textrm{as implemented}$ & $0$\\
-Psi\_A & $\Psi_A\ \textrm{as implemented}$ & $0$\\
-Psi\_RR & $\Psi_{RR}\ \textrm{as implemented}$ & $0$\\
-Psi\_RA & $\Psi_{RA}\ \textrm{as implemented}$ & $0$\\
-Psi\_AA & $\Psi_{AA}\ \textrm{as implemented}$ & $0$\\
-dR/dgamma0 & $\partial_{\gamma_0}R - R(2\ell_0-h_0)$ & $0$\\
-dA/dgamma0 & $\partial_{\gamma_0}A - A(\ell_0-h_0)$ & $0$\\
-d2R/dgamma0 dgamma0 & $\partial^2_{\gamma_0\gamma_0}R\ \textrm{as implemented}$ & $0$\\
-d2A/dgamma0 dgamma0 & $\partial^2_{\gamma_0\gamma_0}A\ \textrm{as implemented}$ & $0$\\
-d2R/dgamma0 dgamma1 & $\partial^2_{\gamma_0\gamma_1}R\ \textrm{as implemented}$ & $0$\\
-d2A/dgamma0 dgamma1 & $\partial^2_{\gamma_0\gamma_1}A\ \textrm{as implemented}$ & $0$\\
-dR/dgamma1 & $\partial_{\gamma_1}R - R(2\ell_1-h_1)$ & $0$\\
-dA/dgamma1 & $\partial_{\gamma_1}A - A(\ell_1-h_1)$ & $0$\\
-d2R/dgamma1 dgamma0 & $\partial^2_{\gamma_1\gamma_0}R\ \textrm{as implemented}$ & $0$\\
-d2A/dgamma1 dgamma0 & $\partial^2_{\gamma_1\gamma_0}A\ \textrm{as implemented}$ & $0$\\
-d2R/dgamma1 dgamma1 & $\partial^2_{\gamma_1\gamma_1}R\ \textrm{as implemented}$ & $0$\\
-d2A/dgamma1 dgamma1 & $\partial^2_{\gamma_1\gamma_1}A\ \textrm{as implemented}$ & $0$\\
+lambda(eta,kappa,S) equals NiMARE's summand & $\lambda\big|_{\eta,\kappa} - \big(\log\mathcal{L}_v + \log\Gamma(Y_v+1)\big)$ & $0$\\
+d lambda/dS = d lambda/deta & $\partial_{S_v}\lambda - \partial_\eta\lambda$ & $0$\\
+lambda\_eta & $\lambda_\eta - \frac{Y_v-\mu_v}{1+x_v}$ & $0$\\
+lambda\_eta\_eta & $\lambda_{\eta\eta} + \frac{\mu_v+Y_vx_v}{(1+x_v)^2}$ & $0$\\
+lambda\_eta\_kappa & $\lambda_{\eta\kappa} + \frac{(Y_v-\mu_v)x_v}{(1+x_v)^2}$ & $0$\\
+lambda\_kappa & $\lambda_\kappa\ \textrm{as implemented}$ & $0$\\
+lambda\_kappa\_kappa & $\lambda_{\kappa\kappa}\ \textrm{as implemented}$ & $0$\\
+count sum in lambda\_kappa, y=0 & $G_1(Y_v=0) - \sum_{j<0}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=0 & $G_2(Y_v=0) - \sum_{j<0}\frac{jk}{(1+jk)^2}$ & $0$\\
+count sum in lambda\_kappa, y=1 & $G_1(Y_v=1) - \sum_{j<1}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=1 & $G_2(Y_v=1) - \sum_{j<1}\frac{jk}{(1+jk)^2}$ & $0$\\
+count sum in lambda\_kappa, y=2 & $G_1(Y_v=2) - \sum_{j<2}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=2 & $G_2(Y_v=2) - \sum_{j<2}\frac{jk}{(1+jk)^2}$ & $0$\\
+count sum in lambda\_kappa, y=3 & $G_1(Y_v=3) - \sum_{j<3}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=3 & $G_2(Y_v=3) - \sum_{j<3}\frac{jk}{(1+jk)^2}$ & $0$\\
+count sum in lambda\_kappa, y=4 & $G_1(Y_v=4) - \sum_{j<4}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=4 & $G_2(Y_v=4) - \sum_{j<4}\frac{jk}{(1+jk)^2}$ & $0$\\
+count sum in lambda\_kappa, y=5 & $G_1(Y_v=5) - \sum_{j<5}\frac{jk}{1+jk}$ & $0$\\
+count sum in lambda\_kappa\_kappa, y=5 & $G_2(Y_v=5) - \sum_{j<5}\frac{jk}{(1+jk)^2}$ & $0$\\
+gap series to x\^{}10 & $\Big[\frac{\log(1+x)}{x} - \frac{1}{1+x}\Big]_{x^10} - \sum_{n=1}^{10}\frac{(-1)^{n+1}nx^n}{n+1}$ & $0$\\
+deta/dgamma0 & $\partial_{\gamma_0}\eta - \ell_0$ & $0$\\
+dkappa/dgamma0 & $\partial_{\gamma_0}\kappa - (h_0-2\ell_0)$ & $0$\\
+d2eta/dgamma0 dgamma0 & $\partial^2_{\gamma_0\gamma_0}\eta - \ell^{(2)}_{00}$ & $0$\\
+d2kappa/dgamma0 dgamma0 & $\partial^2_{\gamma_0\gamma_0}\kappa - (h^{(2)}_{00}-2\ell^{(2)}_{00})$ & $0$\\
+d2eta/dgamma0 dgamma1 & $\partial^2_{\gamma_0\gamma_1}\eta - \ell^{(2)}_{01}$ & $0$\\
+d2kappa/dgamma0 dgamma1 & $\partial^2_{\gamma_0\gamma_1}\kappa - (h^{(2)}_{01}-2\ell^{(2)}_{01})$ & $0$\\
+deta/dgamma1 & $\partial_{\gamma_1}\eta - \ell_1$ & $0$\\
+dkappa/dgamma1 & $\partial_{\gamma_1}\kappa - (h_1-2\ell_1)$ & $0$\\
+d2eta/dgamma1 dgamma0 & $\partial^2_{\gamma_1\gamma_0}\eta - \ell^{(2)}_{10}$ & $0$\\
+d2kappa/dgamma1 dgamma0 & $\partial^2_{\gamma_1\gamma_0}\kappa - (h^{(2)}_{10}-2\ell^{(2)}_{10})$ & $0$\\
+d2eta/dgamma1 dgamma1 & $\partial^2_{\gamma_1\gamma_1}\eta - \ell^{(2)}_{11}$ & $0$\\
+d2kappa/dgamma1 dgamma1 & $\partial^2_{\gamma_1\gamma_1}\kappa - (h^{(2)}_{11}-2\ell^{(2)}_{11})$ & $0$\\
 \bottomrule
 \end{tabular}
 \end{center}
