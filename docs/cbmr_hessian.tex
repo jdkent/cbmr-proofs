@@ -219,7 +219,7 @@ since a Poisson Hessian that responds to the data is wrong; the test suite check
 
 \section{Negative Binomial}
 
-\subsection{Reparameterisation}
+\subsection{The likelihood in $(\eta_p, \kappa_p)$}
 
 NiMARE's negative binomial is a moment-matched approximation to the sum, over the experiments of
 a pattern, of negative binomial variables. With overdispersion $\theta_p$ and
@@ -227,87 +227,91 @@ a pattern, of negative binomial variables. With overdispersion $\theta_p$ and
   s_{1} = \sum_{i\in\E_p} e_i, \qquad s_{2} = \sum_{i\in\E_p} e_i^2 ,
 \end{equation}
 it uses shape $r = s_1^2/(\theta_p s_2)$ and success probability
-$\pi_v = \bigl(1 + s_1/(\theta_p u_{pv} s_2)\bigr)^{-1}$. The derivation becomes tractable under
-the change of variables
-\begin{equation}\label{eq:nb-RA}
-  A_p \;=\; \frac{s_1}{\theta_p s_2}, \qquad R_p \;=\; \frac{s_1^2}{\theta_p s_2} \;=\; s_1 A_p ,
+$\pi_v = \bigl(1 + s_1/(\theta_p u_{pv} s_2)\bigr)^{-1}$. That is, $Y_{pv}$ is negative binomial
+with mean $\mu_{pv} = s_1 u_{pv}$ and dispersion $k_p = \theta_p s_2/s_1^2$, so that
+$\operatorname{Var} Y_{pv} = \mu_{pv} + k_p\mu_{pv}^2$ and $r = 1/k_p$. We work in
+\begin{equation}\label{eq:nb-mk}
+  \eta_p \;=\; \log s_1, \qquad \kappa_p \;=\; \log k_p, \qquad x_{pv} \;=\; k_p\mu_{pv},
 \end{equation}
-which gives $\pi_v = u_{pv}/(u_{pv}+A_p)$ and $1-\pi_v = A_p/(u_{pv}+A_p)$.
+which give $\pi_v = x_{pv}/(1+x_{pv})$ and $1-\pi_v = 1/(1+x_{pv})$.
 
-\begin{lemma}\label{lem:nb-psi}
+\begin{lemma}\label{lem:nb-lambda}
 Up to an additive constant depending only on the data,
-\begin{equation}\label{eq:psi}
-\begin{split}
-  f_p \;=\; \Psi(R_p, A_p, S_{p\cdot}) \;=\;{}& -\sum_v \log\Gamma(Y_{pv}+R_p)
-     + V\log\Gamma(R_p) - VR_p\log A_p\\
-     &{}+ \sum_v (R_p+Y_{pv})\log(u_{pv}+A_p) - \sum_v Y_{pv}S_{pv}.
-\end{split}
+$f_p = -\sum_v \lambda(\eta_p, \kappa_p, S_{pv}; Y_{pv})$ with
+\begin{equation}\label{eq:lambda}
+  \lambda(\eta, \kappa, S; Y) \;=\; \log\Gamma(Y+e^{-\kappa}) - \log\Gamma(e^{-\kappa})
+     + Y\kappa + Y(\eta+S) - (Y+e^{-\kappa})\log\bigl(1+e^{\kappa+\eta+S}\bigr).
 \end{equation}
 \end{lemma}
 
 \begin{proof}
-Substituting $\log(1-\pi_v) = \log A_p - \log(u_{pv}+A_p)$ and
-$\log \pi_v = S_{pv} - \log(u_{pv}+A_p)$ into NiMARE's summand
-$\log\Gamma(Y+r) - \log\Gamma(Y+1) - \log\Gamma(r) + r\log(1-\pi) + Y\log\pi$ and negating gives
-\eqref{eq:psi} plus $\sum_v \log\Gamma(Y_{pv}+1)$, which is free of $\phi$.
+Substituting $r = e^{-\kappa}$, $\log(1-\pi_v) = -\log(1+x_{pv})$ and
+$\log \pi_v = \kappa_p + \eta_p + S_{pv} - \log(1+x_{pv})$ into NiMARE's summand
+$\log\Gamma(Y+r) - \log\Gamma(Y+1) - \log\Gamma(r) + r\log(1-\pi) + Y\log\pi$ gives
+\eqref{eq:lambda} minus $\log\Gamma(Y_{pv}+1)$, which is free of $\phi$.
 \end{proof}
 
-The value of \eqref{eq:psi} is that it separates the three ways the parameters enter: the special
-functions see only $R_p$, the voxels only $S_{p\cdot}$, and the moderators only $(R_p, A_p)$.
+The value of \eqref{eq:lambda} is that it separates the three ways the parameters enter: the
+special functions see only $\kappa_p$, the voxels enter only through $\eta_p + S_{pv}$, and the
+moderators only through $(\eta_p, \kappa_p)$. Every derivative in $S_{pv}$ is therefore the
+corresponding derivative in $\eta_p$.
 
 \begin{proposition}[Negative binomial observed information]\label{prop:nb}
-Write $d_{pv} = u_{pv}+A_p$. Then
+Write
 \begin{equation}\label{eq:nb-sigma}
-  \Sigma_p = \diag(w_{p\cdot}), \qquad
-  w_{pv} \;=\; \frac{(R_p + Y_{pv})\, u_{pv} A_p}{d_{pv}^{2}} ,
+  w_{pv} \;=\; \frac{\mu_{pv} + Y_{pv}x_{pv}}{(1+x_{pv})^{2}}, \qquad
+  c_{pv} \;=\; \frac{(Y_{pv} - \mu_{pv})\,x_{pv}}{(1+x_{pv})^{2}}, \qquad
+  g(x) \;=\; \frac{\log(1+x)}{x} - \frac{1}{1+x},
 \end{equation}
-and, with $\partial_R := \partial \Psi/\partial R$ etc.,
+and, for integer counts, with $n_{pj}$ the number of voxels at which $Y_{pv} > j$,
+\begin{equation}\label{eq:nb-count-sums}
+  G_{1p} = \sum_{j\ge 0} n_{pj}\frac{jk_p}{1+jk_p}, \qquad
+  G_{2p} = \sum_{j\ge 0} n_{pj}\frac{jk_p}{(1+jk_p)^2}.
+\end{equation}
+Then $\Sigma_p = \diag(w_{p\cdot})$, $(\tau_p)_{vq} = w_{pv}\,\partial_q\eta_p + c_{pv}\,\partial_q\kappa_p$,
+and
+\begin{equation}\label{eq:nb-gg}
+\begin{split}
+  (\Xi_p)_{qq'} \;=\;{}& \Bigl(\sum_v w_{pv}\Bigr)\partial_q\eta_p\,\partial_{q'}\eta_p
+    + \Bigl(\sum_v c_{pv}\Bigr)\bigl(\partial_q\eta_p\,\partial_{q'}\kappa_p
+      + \partial_{q'}\eta_p\,\partial_q\kappa_p\bigr)
+    - \Lambda_{\kappa\kappa}\,\partial_q\kappa_p\,\partial_{q'}\kappa_p\\
+    &{}- \Lambda_\eta\,\partial^2_{qq'}\eta_p - \Lambda_\kappa\,\partial^2_{qq'}\kappa_p ,
+\end{split}
+\end{equation}
+where
 \begin{align}
-  \frac{\partial^2 \Psi}{\partial S_{pv}\partial R_p} = \frac{u_{pv}}{d_{pv}},
-  &\qquad
-  \frac{\partial^2 \Psi}{\partial S_{pv}\partial A_p} = -\frac{(R_p+Y_{pv})u_{pv}}{d_{pv}^{2}},
-    \label{eq:nb-cross}\\
-  \Psi_{RR} = -\sum_v \psi_1(Y_{pv}+R_p) + V\psi_1(R_p),
-  &\qquad
-  \Psi_{RA} = -\frac{V}{A_p} + \sum_v \frac{1}{d_{pv}},\notag\\
-  \Psi_{AA} = \frac{VR_p}{A_p^2} - \sum_v \frac{R_p+Y_{pv}}{d_{pv}^{2}}.&
-    \label{eq:nb-second}
-\end{align}
-where $\psi_1$ is the trigamma function. The $\beta\gamma$ and $\gamma\gamma$ blocks follow by
-the chain rule through $R_p(\gamma), A_p(\gamma)$:
-\begin{align}
-  \frac{\partial^2 f_p}{\partial \beta_{ck}\partial\gamma_q}
-   &= L_{pc}\Bigl[\bigl(B^\top \tfrac{u_{p\cdot}}{d_{p\cdot}}\bigr)_k \partial_q R_p
-      - \bigl(B^\top \tfrac{(R_p+Y_{p\cdot})u_{p\cdot}}{d_{p\cdot}^2}\bigr)_k \partial_q A_p
-      \Bigr], \label{eq:nb-bg}\\
-  \frac{\partial^2 f_p}{\partial \gamma_q\partial\gamma_{q'}}
-   &= \Psi_{RR}\,\partial_q R_p\, \partial_{q'} R_p
-    + \Psi_{RA}\bigl(\partial_q R_p\, \partial_{q'} A_p + \partial_{q'} R_p\, \partial_q A_p\bigr)
-    + \Psi_{AA}\, \partial_q A_p\, \partial_{q'} A_p\notag\\
-   &\qquad{}+ \Psi_{R}\, \partial^2_{qq'} R_p + \Psi_{A}\, \partial^2_{qq'} A_p.
-    \label{eq:nb-gg}
+  \Lambda_\eta &= \sum_v \frac{Y_{pv}-\mu_{pv}}{1+x_{pv}}, \notag\\
+  \Lambda_\kappa &= G_{1p} + \sum_v \Bigl(\mu_{pv}\,g(x_{pv})
+     - \frac{Y_{pv}x_{pv}}{1+x_{pv}}\Bigr), \label{eq:nb-second}\\
+  \Lambda_{\kappa\kappa} &= G_{2p} + \sum_v \Bigl(\mu_{pv}\Bigl(\frac{x_{pv}}{(1+x_{pv})^2}
+     - g(x_{pv})\Bigr) - \frac{Y_{pv}x_{pv}}{(1+x_{pv})^2}\Bigr). \notag
 \end{align}
 \end{proposition}
 
 \begin{proof}
-Differentiate \eqref{eq:psi} in $S_{pv}$, using $\partial u_{pv}/\partial S_{pv} = u_{pv}$:
+Differentiate \eqref{eq:lambda}, using $\partial\mu/\partial\eta = \mu$, $\partial x/\partial\eta =
+\partial x/\partial\kappa = x$ and $e^{-\kappa}x = \mu$:
 \[
-  \frac{\partial \Psi}{\partial S_{pv}} = \frac{(R_p+Y_{pv})u_{pv}}{d_{pv}} - Y_{pv},
+  \lambda_\eta = Y - \frac{(Y+e^{-\kappa})x}{1+x} = \frac{Y-\mu}{1+x}, \qquad
+  \lambda_{\eta\eta} = -\frac{\mu+Yx}{(1+x)^2}, \qquad
+  \lambda_{\eta\kappa} = -\frac{(Y-\mu)x}{(1+x)^2}.
 \]
+Since $\lambda$ is a sum of per-voxel terms and $S_{pv}$ enters as $\eta_p$ does, $\Sigma_p$ is
+diagonal with entries $-\lambda_{\eta\eta} = w_{pv}$, and $(\tau_p)_{vq}$ is
+$-\lambda_{\eta\eta}\partial_q\eta_p - \lambda_{\eta\kappa}\partial_q\kappa_p$. In $\kappa$,
 \[
-  \frac{\partial^2 \Psi}{\partial S_{pv}\partial S_{pv'}}
-    = (R_p+Y_{pv})\,\frac{u_{pv}(u_{pv}+A_p) - u_{pv}^2}{d_{pv}^2}\,\delta_{vv'}
-    = \frac{(R_p+Y_{pv})\,u_{pv}A_p}{d_{pv}^2}\,\delta_{vv'},
+  \lambda_\kappa = Y - e^{-\kappa}\bigl(\psi(Y+e^{-\kappa}) - \psi(e^{-\kappa})\bigr)
+     + \mu\,g(x) - \frac{Yx}{1+x}.
 \]
-which is \eqref{eq:nb-sigma}; the Kronecker delta appears because \eqref{eq:psi} is a sum of
-per-voxel terms. Differentiating $\partial\Psi/\partial S_{pv}$ in $R_p$ and in $A_p$ gives
-\eqref{eq:nb-cross}, and differentiating $\Psi_R, \Psi_A$ gives \eqref{eq:nb-second}. Since
-$\gamma$ enters $\Psi$ only through the pair $(R_p, A_p)$, the multivariate chain rule for a
-composition $\gamma \mapsto (R,A) \mapsto \Psi$ yields \eqref{eq:nb-bg} and \eqref{eq:nb-gg}, the
-last two terms of \eqref{eq:nb-gg} being the curvature of the inner map.
+For integer $Y$, $\psi(Y+r) - \psi(r) = \sum_{j<Y} 1/(r+j)$, so the first two terms are
+$\sum_{j<Y} jk/(1+jk)$; summed over voxels this is $G_{1p}$. Differentiating once more, and using
+$\psi_1(Y+r) - \psi_1(r) = -\sum_{j<Y} 1/(r+j)^2$, gives $\Lambda_{\kappa\kappa}$ with $G_{2p}$.
+Since $\gamma$ enters $f_p$ only through $(\eta_p, \kappa_p)$, the chain rule gives
+\eqref{eq:nb-gg}, the last two terms being the curvature of the inner map.
 \end{proof}
 
-\begin{lemma}[Derivatives of the reparameterisation]\label{lem:nb-RA-derivs}
+\begin{lemma}[Derivatives of $\eta_p$ and $\kappa_p$]\label{lem:nb-mk-derivs}
 Let $U_q = \sum_{i\in\E_p} e_iG_{iq}$, $W_q = \sum_{i\in\E_p} e_i^2G_{iq}$,
 $U^{(2)}_{qq'} = \sum_{i\in\E_p} e_iG_{iq}G_{iq'}$,
 $W^{(2)}_{qq'} = \sum_{i\in\E_p} e_i^2G_{iq}G_{iq'}$, and
@@ -317,37 +321,55 @@ $W^{(2)}_{qq'} = \sum_{i\in\E_p} e_i^2G_{iq}G_{iq'}$, and
   \ell^{(2)}_{qq'} = \frac{U^{(2)}_{qq'}}{s_1} - \frac{U_qU_{q'}}{s_1^2},\quad
   h^{(2)}_{qq'} = \frac{4W^{(2)}_{qq'}}{s_2} - \frac{4W_qW_{q'}}{s_2^2} .
 \]
-Then, with $\delta^A_q = \ell_q - h_q$ and $\delta^R_q = 2\ell_q - h_q$,
+Then
 \[
-  \partial_q A_p = A_p\,\delta^A_q, \qquad
-  \partial_q R_p = R_p\,\delta^R_q,
-\]
-\[
-  \partial^2_{qq'} A_p = A_p\bigl(\delta^A_q\delta^A_{q'} + \ell^{(2)}_{qq'} - h^{(2)}_{qq'}\bigr),
-  \qquad
-  \partial^2_{qq'} R_p = R_p\bigl(\delta^R_q\delta^R_{q'} + 2\ell^{(2)}_{qq'} - h^{(2)}_{qq'}\bigr).
+  \partial_q \eta_p = \ell_q, \qquad
+  \partial_q \kappa_p = h_q - 2\ell_q, \qquad
+  \partial^2_{qq'} \eta_p = \ell^{(2)}_{qq'}, \qquad
+  \partial^2_{qq'} \kappa_p = h^{(2)}_{qq'} - 2\ell^{(2)}_{qq'} .
 \]
 \end{lemma}
 
 \begin{proof}
-$\log A_p = \log s_1 - \log s_2 - \log\theta_p$ and $\log R_p = 2\log s_1 - \log s_2 -
-\log\theta_p$. Since $\partial_q s_1 = U_q$ and $\partial_q s_2 = 2W_q$, we get
-$\partial_q \log s_1 = \ell_q$ and $\partial_q \log s_2 = h_q$; differentiating again,
-$\partial^2_{qq'}\log s_1 = \ell^{(2)}_{qq'}$ and $\partial^2_{qq'} \log s_2 = h^{(2)}_{qq'}$
-(the factor $4$ arises because $\partial^2_{qq'} s_2 = 4W^{(2)}_{qq'}$). Finally
-$\partial_q X = X \partial_q \log X$ and
-$\partial^2_{qq'} X = X\bigl(\partial_q\log X\, \partial_{q'}\log X + \partial^2_{qq'}\log X\bigr)$
-for any positive $X$.
+$\eta_p = \log s_1$ and $\kappa_p = \log\theta_p + \log s_2 - 2\log s_1$. Since
+$\partial_q s_1 = U_q$ and $\partial_q s_2 = 2W_q$, we get $\partial_q \log s_1 = \ell_q$ and
+$\partial_q \log s_2 = h_q$; differentiating again, $\partial^2_{qq'}\log s_1 = \ell^{(2)}_{qq'}$
+and $\partial^2_{qq'} \log s_2 = h^{(2)}_{qq'}$ (the factor $4$ arises because
+$\partial^2_{qq'} s_2 = 4W^{(2)}_{qq'}$).
 \end{proof}
 
+\begin{remark}[Why $(\eta, \kappa)$]\label{rem:nb-precision}
+An earlier form of this derivation worked in $R_p = s_1^2/(\theta_p s_2) = 1/k_p$ and
+$A_p = s_1/(\theta_p s_2)$. It is the same mathematics, but not the same arithmetic. As
+$\theta_p \to 0$ both grow like $1/\theta_p$, and the moderator block subtracts terms of that
+order that should cancel to order one. On a $1{,}328$-experiment voxel-based meta-regression,
+one pattern of $99$ experiments fitted $\theta_p = 8.4\times10^{-13}$, so $r \approx 1.6\times10^{12}$.
+For that pattern's diagonal moderator entry a $50$-digit evaluation gives $30.92$; the $(R,A)$
+form gave $5.89$, and the information had a negative eigenvalue. In $(\eta,\kappa)$ every term
+of Proposition~\ref{prop:nb} is of order one: $w$, $c$ and the summands of $G_{1p}, G_{2p}$
+are bounded, and $g(x) \approx x/2$ is summed from its power series
+$\sum_{n\ge1} (-1)^{n+1} n x^n/(n+1)$ below $x = 10^{-2}$, where the direct form cancels. The
+$(\eta,\kappa)$ form agrees with the $50$-digit value to $10^{-7}$ relative. Autodiff gave
+$27.69$: it differentiates the likelihood as NiMARE writes it, $\log\Gamma(Y+r) - \log\Gamma(r)$
+with $r \approx 10^{12}$, which is not exact there either.
+
+The sums \eqref{eq:nb-count-sums} need integer counts. CBMR's foci are integers, so their
+pattern marginals are too; for fractional counts the implementation uses the digamma forms,
+which are exact away from $k_p = 0$.
+\end{remark}
+
 \begin{corollary}[Poisson as a limit]
-As $\theta_p \to 0$ with $\gamma$ fixed, $A_p \to \infty$ and $R_p = s_1 A_p \to\infty$, and
+As $\theta_p \to 0$ with $\gamma$ fixed, $x_{pv} \to 0$ and
 \[
-  w_{pv} = \frac{(R_p+Y_{pv})u_{pv}A_p}{(u_{pv}+A_p)^2}
+  w_{pv} = \frac{\mu_{pv} + Y_{pv}x_{pv}}{(1+x_{pv})^2}
    \;\longrightarrow\; s_1 u_{pv} \;=\; T_p u_{pv},
 \]
-recovering Proposition~\ref{prop:poisson}. In particular the negative binomial weight is
-foci-dependent at any $\theta_p > 0$ and the dependence vanishes only in the Poisson limit.
+recovering $\Sigma_p$ of Proposition~\ref{prop:poisson}. In particular the negative binomial
+weight is foci-dependent at any $\theta_p > 0$ and the dependence vanishes only in the Poisson
+limit. In the same limit $c_{pv}$, $G_{1p}$, $G_{2p}$ and $\mu_{pv}g(x_{pv})$ vanish, so
+\eqref{eq:nb-gg} tends to the information of a Poisson likelihood on the pattern marginals. That
+differs from the $\gamma\gamma$ block of Proposition~\ref{prop:poisson}, whose count term
+$\sum_i y_{i\cdot}m_i$ is taken per experiment, by $-\bigl(\sum_v Y_{pv}\bigr)\ell^{(2)}_{qq'}$.
 \end{corollary}
 
 \section{Clustered Negative Binomial}
@@ -422,26 +444,21 @@ Two independent checks establish that the propositions describe the same matrix 
 
 \subsection{Symbolic}
 
-\texttt{scripts/symbolic\_nb.py} and \texttt{scripts/symbolic\_cnb.py} construct the likelihood
-exactly as \texttt{nimare/meta/cbmr/distributions.py} writes it, differentiate it with
-\texttt{sympy} in the primitive coefficients, subtract the claimed closed form, and simplify.
-Every residual is the symbol $0$; nothing numerical is involved, so these are proofs on a
-symbolic instance rather than evidence at a sample point.
+\texttt{proofs/negative\_binomial.py} and \texttt{proofs/clustered\_negative\_binomial.py}
+construct the likelihood exactly as \texttt{nimare/meta/cbmr/distributions.py} writes it,
+differentiate it with \texttt{sympy}, subtract the claimed closed form, and simplify. Every
+residual is the symbol $0$; nothing numerical is involved, so these are proofs on a symbolic
+instance rather than evidence at a sample point.
 
 For the clustered case the whole composite Hessian closes in one pass. For the negative binomial
 the composite is intractable for \texttt{simplify}, so the proof is decomposed exactly as the
-argument above is: (i) NiMARE's summand equals $\Psi(R,A,S)$ of Lemma~\ref{lem:nb-psi}; (ii) the
-second partials of $\Psi$ are \eqref{eq:nb-sigma}--\eqref{eq:nb-second}; (iii) the derivatives of
-$R,A$ are those of Lemma~\ref{lem:nb-RA-derivs}. Composition is then
-Lemma~\ref{lem:master} together with the chain rule, which is a theorem.
-
-\begin{remark}[A subtlety worth recording]
-A first attempt verified (i) by eliminating $s_1$ from NiMARE's expression via $s_1 = A\theta s_2$
-and comparing with $\Psi$. This reports a spurious mismatch whose residual contains
-$A^2 s_2 \theta$. That quantity \emph{is} $R$: given $(s_1,s_2,\theta)$, $R$ and $A$ are not
-independent, and eliminating only one of the two relations leaves the expressions in different
-but equal forms. Substituting both definitions into $\Psi$ instead closes the identity.
-\end{remark}
+argument above is: (i) NiMARE's summand equals $\lambda$ of Lemma~\ref{lem:nb-lambda}; (ii) the
+partials of $\lambda$ are those of Proposition~\ref{prop:nb}, and $S$ enters as $\eta$ does;
+(iii) the derivatives of $\eta,\kappa$ are those of Lemma~\ref{lem:nb-mk-derivs}. Composition is
+then Lemma~\ref{lem:master} together with the chain rule, which is a theorem. Two identities the
+implementation relies on for precision are checked as well: at integer counts the digamma terms
+equal the sums \eqref{eq:nb-count-sums}, and $g$ has the power series of
+Remark~\ref{rem:nb-precision}.
 
 \subsection{Numerical}
 
@@ -451,7 +468,9 @@ the implementations --- vectorisation, pattern assembly, loadings scatter --- ag
 Table~\ref{tab:designs} reports the design coverage. Two further tests guard the structural
 claims: the Poisson Hessian must be unchanged when the foci are doubled
 (Proposition~\ref{prop:poisson}), and the other two must move, so a foci-independent
-implementation of either cannot pass silently.
+implementation of either cannot pass silently. Near $\theta_p = 0$ autodiff is itself inexact
+(Remark~\ref{rem:nb-precision}), so NiMARE's test of the negative binomial there compares against
+a $50$-digit \texttt{mpmath} Hessian of the likelihood instead.
 
 \section{Structure of the information matrix}
 
@@ -647,11 +666,11 @@ guard working.
         has a single experiment, which excludes a continuous spatial covariate. That is a
         pre-existing restriction of the moment-matching approximation, not of these derivations;
         the same term with a coarse covariate is accepted and handled.
-  \item The negative binomial $\gamma\gamma$ block \eqref{eq:nb-gg} is the least numerically
-        comfortable part of the implementation: $\Psi_R\,\partial^2R$ and $\Psi_A\,\partial^2A$ are
-        large and opposite in sign, and agreement with autodiff degrades from $\sim\!10^{-16}$ to
-        $\sim\!10^{-13}$ relative when moderators are present. This is far below any tolerance
-        that matters for standard errors but is worth knowing.
+  \item The negative binomial closed form stays accurate as $\theta_p \to 0$
+        (Remark~\ref{rem:nb-precision}), but the likelihood NiMARE fits is still written in
+        $r = 1/k_p$. A fit that drives $\theta_p$ toward zero evaluates
+        $\log\Gamma(Y+r) - \log\Gamma(r)$ with $r$ of order $10^{12}$, which loses precision in
+        the fit and in the autodiff Hessian, though not in the closed form.
   \item The covariance is returned as a dense $(CK+Q)^2$ array because
         \texttt{contrasts.py} indexes it densely. At the $21$-group shape that is $430$~MB, and it
         is the remaining memory floor; exploiting the block structure past the covariance itself
